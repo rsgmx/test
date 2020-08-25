@@ -14,7 +14,7 @@ openSSH protocol 2
 - file ~/.ssh/authorized_keys
 
 *Supported authentication methods*:
-GSSAP, host-based, public-key-based, challenge-response, password, all of which a tried in order.
+GSSAP, host-based, public-key-based, challenge-response, password, all of which are tried in order.
 
 *Host-based*: source machine is listed in server machine /etc/hosts.equiv et al. AND user is non-root AND username is same on both sides, then login is allowed. Server must be able to verify the client's host key.
 
