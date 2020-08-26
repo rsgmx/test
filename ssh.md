@@ -104,7 +104,7 @@ The ssh-agent process must be running.
 > ``$ ssh-add ~/.ssh/[identityfile] -t 5``
 
 *Comment*:
-Optional Parameter `-t` specifies time to live of the credentials in seconds. If you issue the below command the ssh-system will ask you for the passphrase for the identity and make it available for 5 seconds.
+Optional Parameter `-t` specifies time to live of the credentials in seconds. If you issue the below command the ssh-system will ask you for the passphrase for the identity and make it available for 5/five seconds.
 
 
 
