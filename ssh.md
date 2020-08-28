@@ -107,5 +107,35 @@ The ssh-agent process must be running.
 Optional Parameter `-t` specifies time to live of the credentials in seconds. If you issue the below command the ssh-system will ask you for the passphrase for the identity and make it available for 5/five seconds.
 
 
+### script
+
+<code>
+env=~/.ssh/agent.env
+
+agent_load_env () { test -f "$env" && . "$env" >| /dev/null ; }
+
+agent_start () {
+    (umask 077; ssh-agent >| "$env")
+    . "$env" >| /dev/null ; }
+
+agent_load_env
+
+\# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2= agent not running
+agent_run_state=$(ssh-add -l >| /dev/null 2>&1; echo $?)
+
+if [ ! "$SSH_AUTH_SOCK" ] || [ $agent_run_state = 2 ]; then
+    agent_start
+    ssh-add ~/.ssh/rs_rsa
+	ssh-add ~/.ssh/rs_gmx
+elif [ "$SSH_AUTH_SOCK" ] && [ $agent_run_state = 1 ]; then
+    ssh-add ~/.ssh/rs_rsa
+	ssh-add ~/.ssh/rs_gmx
+fi
+
+ssh-add -l
+
+unset env
+
+</code>
 
 
