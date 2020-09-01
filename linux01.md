@@ -17,47 +17,63 @@ bash = borne again shell
 
 Types of shells:
 
-<em>(1) Nontinteractive Shell</em>
-
-<em>(2) Interactive Shell:</em> <br>A shell started without a ``-c command`` argument. IO-Streams will be connected to STDIN and STDOUT. ``$i`` will include ``i``
+<em>(1) Interactive Shell:</em> <br>
+>``$ bash``
+A shell started without a ``-c command`` argument. IO-Streams will be connected to STDIN and STDOUT. ``$i`` will include ``i``
 
 <code>
 $ echo $i <br>
 > HimB
 </code>
 
-<em>(3) Login Shell:</em> A shell started with ``--login`` or first argument first character is ``-``
+<em>(2) Nontinteractive Shell</em><br>
+Shell started with ``bash -c command``. 
+>``$bash -c command``
+
+STDIN is not connected(?)
+
+<em>(3) Login Shell:</em><br> 
+A shell started with ``--login`` or first argument first character is ``-``
+>``$ bash --login``
+
+<em>(4) Restricted Shell:</em><br> 
+> ``$ bash -r | --restricted``
+
+#### Questions:
+1. How do I find out what kind of shell do I have?
+A: ???
+
 
 ### 2. bash-Startup - Invocation
 Invocation of the bash shell.
-> ``bash -i -r``
+> ``bash -i -r --login --noprofile``
 
 >`` -i == interactive shell``<br>
 `` -r | --restricted == restricted shell``<br>
-``--login == login shell``<br>
-``--noprofile == do not load any of the profile files``
+`` --login == login shell``<br>
+`` --noprofile == do not load any of the profile files``<br>
+``bash -c "command" [arguments]``
 
 
-> ``bash -c "command" [arguments]``
+### 3. bash configuration
 
-> ``- c ``
+Files: .profile
 
+Aliases
 
+History
 
+Commandline editor
 
-### 3. bash-Configuration
-
-
+Prompt
 
 
 ### 4. process - job - coprocess
 
-Keywords: execution context - environment - process group - signals - background vs foreground - signals - pipelines - subshell - process and child process
+execution context - environment - process group - signals - background vs foreground - signals - pipelines - subshell - process and child process
 
 External Tools:
 >`` ps, top, pstree, kill, pidof``
-
-
 
 List process for process id PID 8805:
 >``$ ps -p 8805 -o pid,pgid,sid,tty,bsdstart,comm``
@@ -80,17 +96,19 @@ coprocesses (internal)
 Creates a process with name NAME ( default COPROC). Creates an ARRAY NAME[]. Creates Pipes with NAME[0] connected with STDOUT of command, NAME[1] with STDIN of command. Processes redirections. 
 
 
+#### FAQ:
+
 Q: Can a background process access STDOUT / STDERR ? A: Yes. 
 
 Q: What happens if a background process waits for input from STDIN? A: it gets suspended
 
 Q: Get process ID for the running shell: ``$ echo $PID``
 
-Use ``$$`` which expands to the PID of the shell. In a subshell in expands to the PID of the parent shell, not the subshell.
+Use variable ``$$`` which expands to the PID of the shell. In a subshell in expands to the PID of the parent shell, not the subshell.
 
-``$BASHPID`` expands to the PID of the shell. In a subshell it expands to the PID of the subshell.
+Variable ``$BASHPID`` expands to the PID of the shell. In a subshell it expands to the PID of the subshell.
 
-Consider ``$BASH_SUBSHELL`` which expands to 0 in the mainshell. It expands to 1 in the first subshell. It expands to n indicating the nesting level in furth subshells of subshells.
+Consider ``$BASH_SUBSHELL`` which expands to 0 in the mainshell. It expands to 1 in the first subshell. It expands to n indicating the nesting level in further subshells of subshells.
 
 Q: List jobs with PID
 >``$ jobs -l``
@@ -103,16 +121,26 @@ List process for process group id PGID 22631
 Q: What happens with a running child process when the terminal bash exits?
 A: bash receives a SIGHUB signal which is sent to child processes that are listed in the job table (unless not disowned)
 
-Starting a foreground process ``$ foo.sh``
+Q: What is the job control table?
+
+Q: How can I remove a job from the job control table?
+
+Q: What does it mean to remove a job from the control table? A: The subprocess wont receive a SIGHUB signal on main shell termination.
+
+Starting a foreground process:
+> ``$ foo.sh``
 + process is created
 + inherits STDIN STDOUT STDERR
 + if shell receives SIGHUB it will send SIGHUB to child. Child normally terminates.
 
-Starting a background process ``$ foo.sh &``
+Starting a background process:
+> ``$ foo.sh &``
 + process is created
 + inherits STDIN STDOUT STDERR. BUT: attempt to read from STDIN makes child process suspend
 + put into the job control list.
 + if shell receives SIGHUB it will send SIGHUB to child. Child normally terminates
+
+Builtin command ``disown`` removes a job from the table. 
 
 ``disown`` (builtin) removes the child process from the job control list (-> so no SIGHUB is sent to the child) but child still connected with STDIN STDOUT STDERR. When the parent bash terminates this will make the child fail because inherited IO-Streams are not available.
 
@@ -121,6 +149,8 @@ Starting a background process ``$ foo.sh &``
 + with ``-h``: mark in job table, so that SIGHUB to bash does not get sent to child
 + with ``-a``: remove or mark all jobs
 
+
+External command ``nohup [command]`` isolates command from the shell.
 
 ``$ nohup command`` (external) effectively separate the child from the terminal. "Run program, ignore hangup signals".
 
@@ -140,12 +170,17 @@ Process States:<br>
 + STOPPED
 + ZOMBIE
 
-Change prozess states:<br>
-(1) Through the shell with jobs/bg/fg:
+How does the process change state?<br>
+(1) Interactively through the shell with ``jobs | bg | fg | Ctrl-Z | Ctrl-D | Ctrl-C``:
 + Start a process 
-+ then use [Ctrl-Z] to suspend it. State transits to STOPPED
++ then use ``[Ctrl-Z]`` to stop/suspend it. State transits to STOPPED
 + then use ``$ bg`` to resume operation in the background for the process
 + then use ``$ fg %n`` with the jobspecifier to continue in the foreground.
+
+(2) When the process terminates
+
+(3) When a background process tries to read from STDIN<br>
+new State: ```STOPPED`` (suspended)
 
 (2) Through signals:
 + ``$ kill -l`` to list available SIGNALS
@@ -160,10 +195,12 @@ Important Signals:<br>
 + ``15 == SIGTERM`` sent through KILL default. Terminated orderly.
 + ``20 == SIGSTP`` sent through [Ctrl-Z] == stop=suspend?
 
-Process Identifiers PID and PPID (ParentProcessID)
-Processgroup identifier PGID. SessionID.
+#### Process identifier - parent process id - processgroup id
 
-A bash has a PID. A started subshell has a PID of its own, but the ParentID is the bash. 
+Process Identifier PID and PPID (ParentProcessID)
+Processgroup identifier PGID. Session id SID.
+
+A (main) bash has a PID. The main bash is a session leader, main bash PID is the session id. A started subshell bash has a PID of its own, but the ParentID is the PID of the (main) bash. 
 
 All of the subprocesses have the same sessionid which is the PID for the main bash. Main bash is the sessionleader. 
 
@@ -184,10 +221,67 @@ External Tools:
 See also ``glances``
 
 
-
-
-
 ### 5. IO - pipes - redirections - files - pipelines
+
+Redirection is interpreted by the shell and takes place BEFORE command execution.
+Redirection can OPEN and CLOSE files and provide them to the command. 
+Redirection operators can appear anywhere before and after the command and are processed left-to-right. 
+
+<em>File descriptor number</em> ``0..9`` are used implicitly and are reserved. There is implicit defauls: 0 for STDIN and 1 for STDOUT.
+
+``{VARNAME}`` can appear: opens a file descriptor ( greater 10) and assign it to {VARNAME}.
+
+Order of redirections is significant.
+>`` ls > DIRLIST 2>&1`` == STDOUT and STDERROR are redirected to the file DIRLIST
+
+>`` ls 2>&1 > DIRLIST `` == only STDOUT is redirected. Reason: 2>&1 happens before redirection to dirlist and STDERR was made a copy of the STDOUT before.
+
+Redirecting INPUT:
+
+>`` [n]<WORD`` == WORD gets expanded. File with name is opened for reading. if n=0 it is STDIN.
+
+Redirecting OUTPUT:
+
+>`` [n]>WORD`` == WORD gets expanded. Files is created and opened for writing. If file x exists (a) it is truncated to size 0 or (b) the redirection may fail (see 'noglobber' option in 'set')
+>`` [n]>|WORD`` == attemt redirect even if the file exists.
+
+Redirecting STDOUT and STDERR
+
+Two formats: ``&>WORD`` ( and ``>&WORD``). (`` &>>WORD`` when appending).
+
+Same as: `` >WORD 2>&1`` (``>>WORD 2>&1`` when appending)
+
+
+Duplicate FileDescriptors:
+
+>`` [n]<&WORD`` == fd n is made a copy of fd word, if fd word is open for reading.
+
+>`` [n]<&-`` == fd n is closed.
+
+>`` [n]>&word`` == fd n is dublicated, if fd word is open for writing.
+
+Move FileDescriptors:
+
+>`` [n]<&DIGIT-`` == moves fd digit to fd n. digit is closed after duplication.
+
+>`` [n]>&DIGIT`` == moves fd digit to fd n. digit is closed after duplication.
+
+Open FileDescriptor for read and write.
+
+>``[n]<>WORD`` == 
+
+
+
+### y. Process substitution
+
+>`` <(LIST)``
+
+>`` >(LIST)``
+
+-> LIST is run  with STDIN resp STDOUT connected to a FIFO or some /dev/fd/n file.
+
+Note: No whitespaces between ``<``/``>`` and ``(``!
+
 
 
 
@@ -221,6 +315,18 @@ Usage: load functions, variables, configurations
 
 Search for FILENAME in $PATH, currentWorkDir.
 ExitCode=0 if found, =1 otherwise
+
+#### Grouping
+
+There is two ways of grouping ``(...LIST...)`` and ``{ ...LIST;... }``.
+
+Redirections may be applied to the entire command list.
+
+``(..)`` creates a subshell and executes all commands in this subshell.
+
+`` {... , } `` does NOT create a subshell but executes in the main shell. Needs a semicolon after list, the curly brackets must be surrounded by whitespace!
+
+
 
 
 #### 9.2 Shell Grammar
@@ -272,6 +378,13 @@ compound == { list; }. ExitCode is exitcode of the last executed command in the 
 
 xx. Parameters and Variables
 
+Shell paramater expansion
+
+``${NAME}``
+
+``${!NAME}`` is <em>parameter indirection</em>
+
+
 >`` name=[value]``
 Null String allowed.
 All values undergo certain EXPANSIONs (tilde, etc). PATH-EXPANSION is not performed.
@@ -306,6 +419,42 @@ Any variable can be used that way.
 >`` declare -a name == declare an indexed array``
 
 >`` declare -A name == declare associative array``
+
+
+#### xx. Quoting
+Three quoting mechanisms: ESC-Chacter, single Quote, double Qoute.
+
+Esc-Character is ``\``
+Single quotes: presever meaning. nesting not allowed.
+
+#### xx. command Pipeline: ``|`` and ``|&``
+
+<em>Pipeline</em> is a sequence of commands separated by the pipeline operators.
+
+>`` 'time' -p ! command1 | command2``
+
+Output is connected to the input though a pipe, this happens before any redirection takes place.
+
+Using ``|&`` makes STDERR of command1 be redirected to STDIN of c2, implicit redirection AFTER explicit redirections specified by the command. 
+
+Each command is executed in its own subshell.
+
+``time`` outputs timing statistics. ``!`` negates exit code.
+
+#### xx comand list: ``; & && || ``
+
+<em>command list</cm> is a sequence of commands or pipelines separated by ``; & && || `` and followed by ``; newline &``
+
+if a command is followed by ``&`` => control returns immediately with exit code 0, command gets asynchronously executed in the background. 
+
+``c1 && c2 == AND `` => c2 executed if and only if c1 returns 0.
+
+``c1 || c2 == OR `` => c2 executed if and only if c1 returns non zero.
+
+Return status is exit code of the last command executed.
+
+
+if commands are separated by ``;`` => commands are executed sequentially, 
 
 
 #### xx. Wordsplitting and Expansions and command substitution
@@ -346,9 +495,12 @@ if in double quotes ` "$(command)"` there is no word splitting or pathname expan
 
 <em>arithmetic expansion</em>
 
+>``$(( EXPRESSION ))``
+
+
 <em>word splitting</em>
 
-Performed only when outside double quotes! Perfomed only when there is some form of expnasion. 
+Performed only when outside double quotes! Perfomed only when there is some form of expansion. 
 
 IFS is used as a word delimiter. 
 
@@ -356,9 +508,13 @@ IFS is used as a word delimiter.
 
 <em>pathname expansion / globbing</em>
 
+#### xx. Execution environment and Environment
 
+Elements of the execution environment: (1) open files, (2) current working dir, (3) file creation mode mask (umask), (4) traps (trap), (5) shell parameters set by variables or inherited or set (set), (6) shell functions, (7) options (shopt), (8) aliases (alias), (9) various processIDs
 
+Subshell (when simple command == not builtin, not shell function): separate execution environment, inherited from the calling shell. Subshell can not affect environment of the calling shell. 
 
+Note: traps in the subshell are reset to the traps when mainshell.
 
 
 10. Shell and subshell
