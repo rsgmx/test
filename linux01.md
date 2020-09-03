@@ -547,3 +547,13 @@ Note: traps in the subshell are reset to the traps when mainshell.
 
 
 13. FUNCTION - typset - declare -F
+
+#### xx
+
+scp
+
+>`` scp root@10.10.0.12:/test.file /root/geheim/cptest.file``
+
+(1) directories must exist
+(2) ``-r `` recursively copys entire directories
+
