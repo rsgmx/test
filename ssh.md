@@ -31,6 +31,12 @@ Based on keypairs or certificates.
 
 ssh database of known hosts (~/ssh/known_hosts), updated automatically.
 
+## Reference
+
+https://docstore.mik.ua/orelly/networking_2ndEd/ssh/index.htm|OReilly
+
+
+
 ## Client Configuration
 
 Client config files are ``~/.ssh/config`` and ``/etc/ssh/ssh_config``
