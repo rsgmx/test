@@ -8,6 +8,7 @@
 
  There is also support for entering the passphrase with GUI/X-programm. See ssh-gui--askpass executable.
 
+Q: What happens if you dont use ssh-agent / ssh-add?
 
 ## Usage with GITHUB
 
@@ -106,7 +107,18 @@ Typically your login bash shell is set up so that the setup is provided automati
 
 ## windows specifics
 
--> ssh-agent.exe can be seen in the processexplorer.
+(1) ssh-agent.exe can be seen in the processexplorer. Kill the process if need be.
+
+(2) Git-Bash. In order to use telnet from a gitbash use
+
+>``$ winpty telnet <host> <port>``
+
+(3) Use code from a gitbash to make ssh-agent accessible for the Visual Studio Code git client. 
+
+>``$ code``
+
+
+
 
 ## Configuration
 
@@ -117,11 +129,15 @@ Typically your login bash shell is set up so that the setup is provided automati
 
 
 
-With a tbale
+Exampletable
 
 | Tables        | Are     f sfsdfsd sdf sdfsdfsadfsdfs      | Cool  |
 | :- |-: | -----:|
 | col 3 is      | right-aligned | $1600 
 | line2         | some more text | $1200
+| line3 | ``with some comde text``<br> ``anohter line`` | $1300
+| line4 | <code> This is some code <br> with another line </code>| $1400
+
+
 
 
